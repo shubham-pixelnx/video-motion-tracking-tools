@@ -139,7 +139,7 @@ body {
 	width: 100%;
 }
 
-.steps .player video {
+.steps .player video.backgroundVideo {
 	box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 	border-radius: 5px;
 }
@@ -243,4 +243,24 @@ body {
 	background-color: var(--primary-color);
 	color: white;
 	font-weight: bold;
+}
+.player .stream {
+	position: relative;
+}
+.player .stream canvas {
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+.selectedEmoji {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+}
+.selectedEmoji video {
+	top: 50%;
+	left: 50%;
+	position: absolute;
+	transform: translate(-50%, -60%);
+	height: 100%;
 }
