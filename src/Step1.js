@@ -1,8 +1,8 @@
 import { Component } from "react";
-
-const PLAY = "PLAY";
-const PAUSE = "PAUSE";
-
+import constants from "./constants";
+let {
+	videoActions: { PLAY, PAUSE },
+} = constants;
 const videos = [
 	{
 		url: "https://cdn.wedios.co/mt.wedios.co/myvideo.mp4",
@@ -39,7 +39,7 @@ class Step1 extends Component {
 	};
 	render() {
 		return (
-			<section className="steps step1 animate__animated animate__zoomIn">
+			<section className="steps step1 animate__animated animate__fadeIn">
 				<h1 className="">Select Video</h1>
 				<div className="videoList">
 					{videos.map((vid, index) => {

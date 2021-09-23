@@ -1,9 +1,33 @@
+:root {
+	--primary-color: rgb(103, 58, 183);
+}
+/* width */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+	background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+	background: var(--primary-color);
+	border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+	background: rgb(63, 19, 139);
+}
 * {
 	font-family: "Quicksand", sans-serif;
 	color: #262626;
 }
 body {
-	background-color: rgb(103, 58, 183);
+	background-color: var(--primary-color);
 	background: url("http://www.pngmagic.com/product_images/website-background-image-size-psd-vector-photo.jpg");
 	backdrop-filter: blur(10px);
 	height: 100vh;
@@ -24,42 +48,199 @@ body {
 	padding: 1rem 2rem 3rem;
 	border-radius: 0.5rem;
 }
+.ta-c {
+	text-align: center;
+}
 .steps h1 {
 	font-size: 1.8rem;
 	text-align: center;
 }
-.step1 .videoList {
+.steps .videoList {
 	display: grid;
 	grid-template-columns: 1fr 1fr 1fr;
 	gap: 1.5rem;
+	margin-bottom: 2rem;
 }
-.step1 .videoList .videoListItem {
+.steps .videoList .videoListItem {
 	width: 100%;
 	cursor: pointer;
 	border-radius: 1rem;
 	transition: 0.2s;
 	display: grid;
 	background: white;
-	box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px;
+	box-shadow: rgba(0, 0, 0, 0.45) 0px 25px 20px -20px, rgba(255, 200, 200, 0.3) 0px 0px 0px 2px;
+	border: 2px solid #f6f6f6;
 }
-.step1 .videoList .videoListItem:not(.noHover):hover {
+.steps .videoList .videoListItem:not(.noHover):hover {
 	box-shadow: rgba(255, 255, 255, 0.3) 0px 0px 0px 3px, rgba(103, 58, 183, 0.8) 0 0 0px 1000px;
 	transform: scale(1.5);
 }
-.step1 .videoList .videoListItem .label,
-.step1 .videoList .videoListItem .sub-label {
+.steps .videoList .videoListItem .label,
+.steps .videoList .videoListItem .sub-label {
 	margin: 0;
 }
-.step1 .videoList .videoListItem .sub-label {
+.steps .videoList .videoListItem .sub-label {
 	padding: 0 1rem 1rem;
 }
-.step1 .videoList .videoListItem .label {
+.steps .videoList .videoListItem .label {
 	padding: 1rem;
 	padding-bottom: 0;
 	font-weight: bold;
 	color: teal;
 }
-.step1 .videoList .videoListItem video {
+.steps .videoList .videoListItem video {
 	width: 100%;
 	border-radius: 1rem 1rem 0 0;
+}
+.note {
+	padding: 1rem;
+	background: white;
+	border-radius: 5px;
+	display: grid;
+	align-items: center;
+	grid-template-columns: 9fr 1fr;
+	box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+}
+.note button {
+	background: var(--primary-color);
+	color: white;
+	border: none;
+	padding: 0.7rem 1rem;
+	border-radius: 0.5rem;
+	cursor: pointer;
+}
+.listGroupHeading {
+	margin: 0;
+	padding: 2rem 0 2rem;
+}
+
+.assetsList {
+	display: flex;
+	gap: 1rem;
+	overflow: auto;
+	padding-bottom: 1rem;
+}
+.assetsList > .assetWrapper {
+	display: flex;
+	justify-content: center;
+	cursor: pointer;
+	align-items: center;
+	border: 2px solid lightblue;
+	border-radius: 5px;
+	min-width: 200px;
+	margin-top: 2rem;
+}
+.assetsList > .assetWrapper.active {
+	border: 2px solid dodgerblue;
+	box-shadow: 0 0 10px dodgerblue inset, 0 0 3px dodgerblue;
+}
+
+.assetsList > .assetWrapper video {
+	width: 100%;
+}
+
+.steps .player video {
+	box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+	border-radius: 5px;
+}
+
+.progressWrapper {
+	display: inline-block;
+	height: 3.5em;
+	position: relative;
+	width: 100%;
+}
+.progressWrapper .progressFillWrapper {
+	border: 1px dashed rgba(0, 0, 0, 0.5);
+	position: absolute;
+	width: 100%;
+	top: 50%;
+	transform: translateY(-50%);
+	border-radius: 10px;
+	min-height: 50%;
+}
+.progressWrapper .progressFillWrapper .progressFill {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 20%;
+	height: 100%;
+	background: #262626;
+	border-radius: 10px 0 0 10px;
+}
+.progressWrapper .progressFillWrapper .modifiedPart {
+	position: absolute;
+	left: 30%;
+	width: 20%;
+	height: 100%;
+	/* transform: translateY(-10%); */
+	background-image: url(pattern.png);
+	background-repeat: repeat;
+	background-size: 50px;
+	cursor: move;
+}
+.progressWrapper .progressFillWrapper .seeker,
+.progressWrapper .progressFillWrapper .mdfStart,
+.progressWrapper .progressFillWrapper .mdfEnd {
+	position: absolute;
+	width: 0.2em;
+	background: black;
+	height: 100%;
+	left: 20%;
+	top: 0%;
+	cursor: e-resize;
+}
+.progressWrapper .progressFillWrapper .mdfStart {
+	left: 30%;
+}
+.progressWrapper .progressFillWrapper .mdfEnd {
+	left: 50%;
+}
+.progressWrapper .progressFillWrapper .seeker:before,
+.progressWrapper .progressFillWrapper .mdfStart:before,
+.progressWrapper .progressFillWrapper .mdfEnd:before {
+	position: absolute;
+	content: "";
+	width: 20px;
+	height: 20px;
+	background: #e91e63;
+	bottom: 100%;
+	left: 50%;
+	transform: translate(-50%);
+	border-radius: 50%;
+	border: 2px solid #262626;
+}
+.progressWrapper .progressFillWrapper .mdfStart:before,
+.progressWrapper .progressFillWrapper .mdfEnd:before {
+	top: 100%;
+	bottom: auto;
+	background: #2196f3;
+}
+.playerFooter {
+	display: grid;
+	grid-template-columns: 0.5fr 8fr 1fr;
+	align-items: center;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+.playerFooter .playerMeta {
+	display: flex;
+	align-self: center;
+	font-size: 1rem;
+}
+.playerFooter .playPause {
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
+.playerFooter .playPause button {
+	width: 100%;
+	font-size: 1rem;
+	border: none;
+	padding: 0.6rem 1rem;
+	border-radius: 5px;
+	cursor: pointer;
+	background-color: var(--primary-color);
+	color: white;
+	font-weight: bold;
 }

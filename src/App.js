@@ -4,47 +4,56 @@ import Step2 from "./Step2";
 import StepsWrapper from "./StepsWrapper";
 import "animate.css";
 import "./App.css";
+import constants from "./constants";
+import AnimatedEmojies from "./tools/animatedEmojies";
 
-const steps = {
-	SELECT_VIDEO: "SELECT_VIDEO",
-	SELECT_TOOL: "SELECT_TOOL",
-	TOOL_SCREEN: "TOOL_SCREEN",
-};
+let {
+	steps: { SELECT_TOOL, SELECT_VIDEO },
+	tools: { ANIMATED_EMOJIES, AR_STROKES, NEON_PACK, NEON_EYES, FACE_ELEMENTS },
+} = constants;
 class App extends Component {
 	constructor(props) {
 		super(props);
 
 		this.state = {
-			step: steps.SELECT_VIDEO,
+			view: SELECT_VIDEO,
 
 			stepInputs: {
-				[steps.SELECT_VIDEO]: { url: null },
+				[SELECT_VIDEO]: { url: null },
 			},
 		};
-
-		this.StepComponents = {
-			[steps.SELECT_VIDEO]: <Step1 onVideoSelect={this.onVideoSelect} />,
-			[steps.SELECT_TOOL]: <Step2 stepInputs={this.state.stepInputs} onToolSelect={this.onToolSelect} />,
-		};
 	}
-	moveTo = (nextStep = steps.SELECT_VIDEO) => {
-		this.setState({ step: nextStep });
+	moveTo = (nextStep = SELECT_VIDEO) => {
+		this.setState({ view: nextStep });
 	};
 	onToolSelect = (selectedTool = {}) => {
-		console.log("Selected tool", selectedTool);
+		this.setState((istat) => ({
+			stepInputs: {
+				...istat.stepInputs,
+				[SELECT_TOOL]: selectedTool,
+			},
+		}));
+
+		this.moveTo(selectedTool.key);
 	};
 	onVideoSelect = (data) => {
 		this.setState((istat) => ({
 			stepInputs: {
 				...istat.stepInputs,
-				[steps.SELECT_VIDEO]: data,
+				[SELECT_VIDEO]: data,
 			},
 		}));
 
-		this.moveTo(steps.SELECT_TOOL);
+		this.moveTo(SELECT_TOOL);
 	};
 	render() {
-		return <StepsWrapper>{this.StepComponents[this.state.step]}</StepsWrapper>;
+		return (
+			<StepsWrapper>
+				{this.state.view === SELECT_VIDEO ? <Step1 onVideoSelect={this.onVideoSelect} /> : null}
+				{this.state.view === SELECT_TOOL ? <Step2 moveTo={this.moveTo} stepInputs={this.state.stepInputs} onToolSelect={this.onToolSelect} /> : null}
+				{[ANIMATED_EMOJIES, AR_STROKES, NEON_PACK, NEON_EYES, FACE_ELEMENTS].includes(this.state.view) ? <AnimatedEmojies moveTo={this.moveTo} stepInputs={this.state.stepInputs} /> : null}
+			</StepsWrapper>
+		);
 	}
 }
 
