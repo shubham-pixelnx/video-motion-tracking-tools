@@ -5,6 +5,18 @@ let {
 } = constants;
 const videos = [
 	{
+		url: "https://cdn.wedios.co/mt.wedios.co/just-moving-head.mp4",
+		sublabel: "footage for face tracking.",
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/just-moving-head-2.mp4",
+		sublabel: "another footage for face tracking.",
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/night-shot-for-neon.mp4",
+		sublabel: "footage for face tracking for neon (as it looks good in dark 🤫).",
+	},
+	{
 		url: "https://cdn.wedios.co/mt.wedios.co/myvideo.mp4",
 		sublabel: "footage for hand movements tracking.",
 	},

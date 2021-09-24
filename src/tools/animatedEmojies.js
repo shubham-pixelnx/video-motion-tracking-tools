@@ -7,47 +7,85 @@ let {
 	steps: { SELECT_VIDEO },
 } = constants;
 
-// const emojiStyles = {};
+const commonEmojiStyles = {
+	transform: "translate(-50%,-70%)",
+	height: "120%",
+};
 
 const emojiesList = [
 	{
 		url: "https://cdn.wedios.co/mt.wedios.co/neon-pack-picks/Mask%201.webm",
+		styles: {
+			transform: "translate(-50%,-60%)",
+		},
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/neon-pack-picks/Hat%2002.webm",
+		styles: {
+			transform: "translate(-50%,-150%)",
+		},
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/neon-pack-picks/Hat 10.webm",
+		styles: {
+			transform: "translate(-50%,-120%)",
+			height: "150%",
+		},
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/neon-pack-picks/Sunglass 01.webm",
+		styles: {
+			transform: "translate(-50%,-95%)",
+			height: "50%",
+		},
+	},
+	{
+		url: "https://cdn.wedios.co/assets/weffects/Emoji/17-Surprised_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/01-Eyes%20only_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/43-Eyes%20Up_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/57-Sunglasses_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/66-Geek_1.webm/final.webm",
-	},
-	{
-		url: "https://cdn.wedios.co/assets/weffects/Emoji/69-Hear%20No%20Evil%20Monkey_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/04-Grin%203_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/07-Smile_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/09-Sad%201_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/16-Surprised%20raised%20brows_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/21-Angry%202_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/25-Wink_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 	{
 		url: "https://cdn.wedios.co/assets/weffects/Emoji/46-Angel_1.webm/final.webm",
+		styles: { ...commonEmojiStyles },
 	},
 ];
 
@@ -56,7 +94,7 @@ class AnimatedEmojies extends Component {
 		super(props);
 		this.state = {
 			faceData: {},
-			selectedEmojiSrc: emojiesList[0].url,
+			selectedEmoji: emojiesList[0],
 			faceCam: false,
 		};
 		this.videoTag = createRef();
@@ -64,6 +102,8 @@ class AnimatedEmojies extends Component {
 		this.selectedEmoji = createRef();
 
 		this.logDetectionData = false;
+		this.detectorOptions = {};
+		this.displaySize = { width: 1036, height: 582 };
 	}
 	loadScript = (url) => {
 		return new Promise((resolve, reject) => {
@@ -98,11 +138,52 @@ class AnimatedEmojies extends Component {
 		window.faceapi = faceapi;
 		Promise.all([
 			faceapi.nets.tinyFaceDetector.loadFromUri("/face-api-models"),
-			faceapi.nets.faceLandmark68Net.loadFromUri("/face-api-models"),
-			faceapi.nets.faceRecognitionNet.loadFromUri("/face-api-models"),
-			faceapi.nets.faceExpressionNet.loadFromUri("/face-api-models"),
+			// faceapi.nets.faceLandmark68Net.loadFromUri("/face-api-models"),
+			// faceapi.nets.faceRecognitionNet.loadFromUri("/face-api-models"),
+			// faceapi.nets.faceExpressionNet.loadFromUri("/face-api-models"),
 		]).then(this.initFaceApi);
 	}
+	detectFaceAndSync = async () => {
+		let video = this.videoTag.current;
+		// let canvas = this.canvasTag.current;
+		if (!video) {
+			console.warn("Video element doesn't exists!");
+			setTimeout(() => this.detectFaceAndSync());
+			return;
+		}
+
+		const detections = await faceapi.detectSingleFace(video, this.detectorOptions); /* .withFaceLandmarks().withFaceExpressions() */
+		let emojiDiv = this.selectedEmoji.current;
+		if (!detections) {
+			console.log("No detections");
+			emojiDiv && (emojiDiv.style.display = "none");
+			setTimeout(() => this.detectFaceAndSync());
+			return;
+		}
+		emojiDiv && (emojiDiv.style.display = "block");
+
+		const resizedDetections = faceapi.resizeResults(detections, this.displaySize);
+		// canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+
+		if (this.logDetectionData) {
+			console.log("resizedDetections", resizedDetections);
+		}
+
+		console.log("Working!!", resizedDetections.box.y);
+		emojiDiv &&
+			Object.assign(emojiDiv.style, {
+				top: `${resizedDetections.box.y}px`,
+				left: `${resizedDetections.box.x}px`,
+				width: `${resizedDetections.box.width}px`,
+				height: `${resizedDetections.box.height}px`,
+			});
+
+		// faceapi.draw.drawDetections(canvas, resizedDetections);
+		// faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+		// faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+
+		setTimeout(() => this.detectFaceAndSync());
+	};
 	initFaceApi = async () => {
 		let video = this.videoTag.current;
 		let canvas = this.canvasTag.current;
@@ -111,63 +192,35 @@ class AnimatedEmojies extends Component {
 			let stream = await window.navigator.mediaDevices.getUserMedia({ video: true }).catch(console.log);
 			video.srcObject = stream;
 		} else {
-			console.log(video.src);
 			let blob = await fetch(video.src).then((e) => e.blob());
 			let url = URL.createObjectURL(blob);
-			console.log(url);
 			video.src = url;
 		}
 
 		// const canvas = faceapi.createCanvasFromMedia(video);
 		// document.body.append(canvas);
+		this.detectorOptions = new faceapi.TinyFaceDetectorOptions({
+			scoreThreshold: 0.5,
+
+			// size at which image is processed, the smaller the faster,
+			// but less precise in detecting smaller faces, must be divisible
+			// by 32, common sizes are 128, 160, 224, 320, 416, 512, 608,
+			// for face tracking via webcam I would recommend using smaller sizes,
+			// e.g. 128, 160, for detecting smaller faces use larger sizes, e.g. 512, 608
+			// default: 416
+			inputSize: 416,
+		});
+		faceapi.matchDimensions(canvas, this.displaySize);
+
 		video.play().then(() => {
-			console.log(video.width);
-			const displaySize = { width: 1036, height: 582 };
-			faceapi.matchDimensions(canvas, displaySize);
-
-			let detectAndDraw = async () => {
-				const detections = await faceapi.detectSingleFace(
-					video,
-					new faceapi.TinyFaceDetectorOptions({
-						scoreThreshold: 0.5,
-						inputSize: 224,
-					})
-				); /* .withFaceLandmarks().withFaceExpressions() */
-				let emojiDiv = this.selectedEmoji.current;
-				if (video.paused || video.ended) {
-					console.log("video paused or ended");
-					emojiDiv && (emojiDiv.style.display = "none");
-					return;
-				}
-				if (!detections) {
-					console.log("No detections");
-					emojiDiv && (emojiDiv.style.display = "none");
-					window.requestAnimationFrame(detectAndDraw);
-					return;
-				} else {
-					emojiDiv && (emojiDiv.style.display = "block");
-				}
-				const resizedDetections = faceapi.resizeResults(detections, displaySize);
-				canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-				if (this.logDetectionData) {
-					console.log("resizedDetections", resizedDetections);
-				}
-
-				emojiDiv &&
-					Object.assign(emojiDiv.style, {
-						top: `${resizedDetections.box.y}px`,
-						left: `${resizedDetections.box.x}px`,
-						width: `${resizedDetections.box.width}px`,
-						height: `${resizedDetections.box.height}px`,
-					});
-
-				// faceapi.draw.drawDetections(canvas, resizedDetections);
-				// faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-				// faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
-
-				window.requestAnimationFrame(detectAndDraw);
-			};
-			window.requestAnimationFrame(detectAndDraw);
+			this.detectFaceAndSync();
+			if (video.dataset.eventsapplied !== "true") {
+				video.addEventListener("play", () => {
+					console.log("on play triggered");
+					this.detectFaceAndSync();
+				});
+				video.dataset.eventsapplied = "true";
+			}
 		});
 	};
 
@@ -211,10 +264,10 @@ class AnimatedEmojies extends Component {
 				<h2 className="ta-c">Animated Emojies 😎</h2>
 				<div className="player">
 					<div className="stream">
-						<video loop id="video" className="backgroundVideo" ref={this.videoTag} style={{ width: "100%" }} src={this.props.stepInputs[SELECT_VIDEO].url}></video>
+						<video muted loop id="video" className="backgroundVideo" ref={this.videoTag} style={{ width: "100%" }} src={this.props.stepInputs[SELECT_VIDEO].url}></video>
 						<canvas ref={this.canvasTag} id="canvas" width="1036" height="582"></canvas>
 						<div className="selectedEmoji" ref={this.selectedEmoji}>
-							<video autoPlay muted loop src={this.state.selectedEmojiSrc}></video>
+							<video style={{ ...(this.state.selectedEmoji.styles || {}) }} autoPlay muted loop src={this.state.selectedEmoji.url}></video>
 						</div>
 					</div>
 					<div className="playerFooter">
@@ -241,10 +294,10 @@ class AnimatedEmojies extends Component {
 							<div
 								onClick={() => {
 									this.setState({
-										selectedEmojiSrc: emojiData.url,
+										selectedEmoji: emojiData,
 									});
 								}}
-								className={"assetWrapper".concat(this.state.selectedEmojiSrc === emojiData.url ? " active" : "")}
+								className={"assetWrapper".concat(this.state.selectedEmoji.url === emojiData.url ? " active" : "")}
 								key={index}
 							>
 								<video autoPlay loop muted src={emojiData.url}></video>
