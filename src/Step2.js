@@ -11,14 +11,16 @@ let {
 const tools = [
 	{
 		key: ANIMATED_EMOJIES,
-		url: "https://i.gyazo.com/a97a0e806f41ed2dcbaa08db34623297.mp4",
+		// url: "https://i.gyazo.com/a97a0e806f41ed2dcbaa08db34623297.mp4",
+		url: "https://imgur.com/G2aq1ad.png",
 		label: "Add Animated Emojies 🤩",
 		sublabel: "This will auto-detect the face and lets you select the emoji to add.",
 		group: FACE_TOOLS,
 	},
 	{
 		key: FACE_ELEMENTS,
-		url: "https://i.gyazo.com/9b85242344ab6bdb5f193b5f06fe340a.mp4",
+		// url: "https://i.gyazo.com/9b85242344ab6bdb5f193b5f06fe340a.mp4",
+		url: "https://imgur.com/K0q68im.png",
 		label: "Cool Elements 🕶",
 		sublabel: "Add cool elements such as sunglasses, funky hairs, etc. to the face in the video.",
 		group: FACE_TOOLS,
@@ -111,7 +113,8 @@ class Step2 extends Component {
 											}}
 											key={index}
 										>
-											<video /* poster="https://imgur.com/ZOnnUmq.png" */ muted loop src={tool.url}></video>
+											{tool.url.endsWith(".png") ? <img alt="" src={tool.url} /> : <video muted loop src={tool.url}></video>}
+
 											<p className="label" style={{ paddingBottom: tool.sublabel ? "0px" : "1rem" }}>
 												{tool.label}
 											</p>

@@ -208,7 +208,7 @@ class AnimatedEmojies extends Component {
 			// for face tracking via webcam I would recommend using smaller sizes,
 			// e.g. 128, 160, for detecting smaller faces use larger sizes, e.g. 512, 608
 			// default: 416
-			inputSize: 416,
+			inputSize: 224,
 		});
 		faceapi.matchDimensions(canvas, this.displaySize);
 
