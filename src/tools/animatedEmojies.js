@@ -1,6 +1,5 @@
 import { Component, createRef } from "react";
 import constants from "../constants";
-
 import * as faceapi from "face-api.js";
 
 let {
