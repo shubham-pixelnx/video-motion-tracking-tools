@@ -13,6 +13,18 @@ const videos = [
 		sublabel: "another footage for face tracking.",
 	},
 	{
+		url: "https://cdn.wedios.co/mt.wedios.co/orange-car-coming-towars-camera.mp4",
+		sublabel: "another footage.",
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/tarzen-like-car.mp4",
+		sublabel: "another footage.",
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/robo-handling-cup.mp4",
+		sublabel: "another footage.",
+	},
+	{
 		url: "https://cdn.wedios.co/mt.wedios.co/night-shot-for-neon.mp4",
 		sublabel: "footage for face tracking for neon (as it looks good in dark 🤫).",
 	},

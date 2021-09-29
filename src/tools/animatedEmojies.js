@@ -168,7 +168,8 @@ class AnimatedEmojies extends Component {
 			console.log("resizedDetections", resizedDetections);
 		}
 
-		console.log("Working!!", resizedDetections.box.y);
+		// console.log("Working!!", resizedDetections.box.y);
+
 		emojiDiv &&
 			Object.assign(emojiDiv.style, {
 				top: `${resizedDetections.box.y}px`,
@@ -221,6 +222,7 @@ class AnimatedEmojies extends Component {
 				video.dataset.eventsapplied = "true";
 			}
 		});
+		this.props.showLoader(false);
 	};
 
 	initTracker = async () => {

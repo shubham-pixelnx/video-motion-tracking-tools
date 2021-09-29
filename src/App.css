@@ -26,10 +26,11 @@
 	font-family: "Quicksand", sans-serif;
 	color: #262626;
 }
+#root {
+	position: relative;
+}
 body {
 	background-color: var(--primary-color);
-	background: url("http://www.pngmagic.com/product_images/website-background-image-size-psd-vector-photo.jpg");
-	backdrop-filter: blur(10px);
 	height: 100vh;
 }
 
@@ -102,14 +103,44 @@ body {
 	grid-template-columns: 9fr 1fr;
 	box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 }
-.note button {
+/* .note  */
+button {
 	background: var(--primary-color);
 	color: white;
 	border: none;
 	padding: 0.7rem 1rem;
 	border-radius: 0.5rem;
 	cursor: pointer;
+	transition: 0.1s;
 }
+button.autoWidth {
+	width: auto;
+}
+button.large {
+	font-size: 1.1rem;
+}
+button.secondary {
+	background: white;
+	border: 1px solid var(--primary-color);
+	color: var(--primary-color);
+	font-weight: bold;
+}
+button:hover {
+	opacity: 0.9;
+}
+.spacer {
+	display: inline-block;
+}
+.spacer.x {
+	width: 1rem;
+	height: 1px;
+}
+.spacer.y {
+	display: block;
+	height: 1rem;
+	width: 1px;
+}
+
 .listGroupHeading {
 	margin: 0;
 	padding: 2rem 0 2rem;
@@ -264,4 +295,66 @@ body {
 	position: absolute;
 	transform: translate(-50%, -50%);
 	height: 100%;
+}
+
+/* Absolute Center Spinner */
+.loading {
+	position: fixed;
+	z-index: 999;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.8);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: white;
+	font-size: 2rem;
+}
+.overflowhidden {
+	overflow: hidden;
+}
+
+.popup {
+	position: fixed;
+	right: 0;
+	bottom: 0;
+	top: 0;
+	left: 0;
+	z-index: 100;
+	opacity: 1;
+	visibility: visible;
+	transition: all 0.3s;
+	overflow: auto;
+	text-align: center;
+	padding: 15px;
+	background-color: rgb(36 36 53/0.8);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.popupContent {
+	max-width: 60vw;
+	background: white;
+	overflow: hidden;
+	border-radius: 5px;
+	padding: 1.5rem;
+}
+
+.popupContent > * {
+	width: 100%;
+}
+.trackBoard {
+	position: relative;
+}
+
+.trackBoard video {
+	max-width: 100%;
+	max-height: 50vh;
+}
+.trackBoard canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+	cursor: crosshair;
 }

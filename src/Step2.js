@@ -108,6 +108,7 @@ class Step2 extends Component {
 											}}
 											className="videoListItem noHover"
 											onClick={(e) => {
+												this.props.showLoader();
 												this.props.onToolSelect({
 													...tool,
 												});

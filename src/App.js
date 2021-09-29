@@ -6,6 +6,7 @@ import "animate.css";
 import "./App.css";
 import constants from "./constants";
 import AnimatedEmojies from "./tools/animatedEmojies";
+import NeonPack from "./tools/neonPack";
 
 let {
 	steps: { SELECT_TOOL, SELECT_VIDEO },
@@ -17,12 +18,17 @@ class App extends Component {
 
 		this.state = {
 			view: SELECT_VIDEO,
-
+			loader: false,
 			stepInputs: {
 				[SELECT_VIDEO]: { url: null },
 			},
 		};
 	}
+	showLoader = (show = true) => {
+		this.setState({
+			loader: show,
+		});
+	};
 	moveTo = (nextStep = SELECT_VIDEO) => {
 		this.setState({ view: nextStep });
 	};
@@ -48,11 +54,18 @@ class App extends Component {
 	};
 	render() {
 		return (
-			<StepsWrapper>
-				{this.state.view === SELECT_VIDEO ? <Step1 onVideoSelect={this.onVideoSelect} /> : null}
-				{this.state.view === SELECT_TOOL ? <Step2 moveTo={this.moveTo} stepInputs={this.state.stepInputs} onToolSelect={this.onToolSelect} /> : null}
-				{[ANIMATED_EMOJIES, AR_STROKES, NEON_PACK, NEON_EYES, FACE_ELEMENTS].includes(this.state.view) ? <AnimatedEmojies moveTo={this.moveTo} stepInputs={this.state.stepInputs} /> : null}
-			</StepsWrapper>
+			<>
+				{this.state.loader ? <div className="loading">Loading&#8230;</div> : null}
+				<StepsWrapper>
+					{this.state.view === SELECT_VIDEO ? <Step1 showLoader={this.showLoader} onVideoSelect={this.onVideoSelect} /> : null}
+
+					{this.state.view === SELECT_TOOL ? <Step2 showLoader={this.showLoader} moveTo={this.moveTo} stepInputs={this.state.stepInputs} onToolSelect={this.onToolSelect} /> : null}
+
+					{[ANIMATED_EMOJIES].includes(this.state.view) ? <AnimatedEmojies showLoader={this.showLoader} moveTo={this.moveTo} stepInputs={this.state.stepInputs} /> : null}
+
+					{[NEON_PACK].includes(this.state.view) ? <NeonPack showLoader={this.showLoader} moveTo={this.moveTo} stepInputs={this.state.stepInputs} /> : null}
+				</StepsWrapper>
+			</>
 		);
 	}
 }
