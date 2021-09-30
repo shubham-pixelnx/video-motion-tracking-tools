@@ -4,10 +4,10 @@ let {
 	videoActions: { PLAY, PAUSE },
 } = constants;
 const videos = [
-	/* {
-		url: "https://cdn.wedios.co/mt.wedios.co/just-moving-head.mp4",
-		sublabel: "footage for face tracking.",
-	}, */
+	{
+		url: "https://wedios-live.s3.amazonaws.com/mt.wedios.co/boy-with-headphones.mp4",
+		sublabel: "boy with headphones",
+	},
 	{
 		url: "https://cdn.wedios.co/mt.wedios.co/just-moving-head-2.mp4",
 		sublabel: "another footage for face tracking.",
