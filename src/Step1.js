@@ -5,7 +5,11 @@ let {
 } = constants;
 const videos = [
 	{
-		url: "https://wedios-live.s3.amazonaws.com/mt.wedios.co/boy-with-headphones.mp4",
+		url: "https://cdn.wedios.co/mt.wedios.co/women-tilting-face.mp4",
+		sublabel: "women-tilting-face",
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/boy-with-headphones.mp4",
 		sublabel: "boy with headphones",
 	},
 	{

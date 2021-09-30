@@ -34,7 +34,7 @@ const emojiesList = [
 	{
 		url: "https://cdn.wedios.co/mt.wedios.co/neon-pack-picks/Sunglass 01.webm",
 		styles: {
-			transform: "translate(-50%,-65%)",
+			transform: "translate(-50%,-55%)",
 			height: "50%",
 		},
 	},
@@ -172,19 +172,22 @@ class AnimatedEmojies extends Component {
 			canvas.width = video.width;
 			canvas.height = video.height;
 
-			let faceCascadeFile = "haarcascade_frontalface_default.xml";
-			this.createFileFromUrl(faceCascadeFile, faceCascadeFile, () => {
-				video.play().then(() => {
-					this.startFaceDetection();
-					if (video.dataset.eventsapplied !== "true") {
-						video.addEventListener("play", () => {
-							console.log("on play triggered");
-							this.startFaceDetection();
-						});
-						video.dataset.eventsapplied = "true";
-					}
+			this.faceCascadeFile = "haarcascade_frontalface_default.xml";
+			this.eyeCascadeFile = "haarcascade_eye.xml";
+			this.createFileFromUrl(this.faceCascadeFile, this.faceCascadeFile, () => {
+				this.createFileFromUrl(this.eyeCascadeFile, this.eyeCascadeFile, () => {
+					video.play().then(() => {
+						this.startFaceDetection();
+						if (video.dataset.eventsapplied !== "true") {
+							video.addEventListener("play", () => {
+								console.log("on play triggered");
+								this.startFaceDetection();
+							});
+							video.dataset.eventsapplied = "true";
+						}
+					});
+					this.props.showLoader(false);
 				});
-				this.props.showLoader(false);
 			});
 		});
 	};
@@ -198,13 +201,17 @@ class AnimatedEmojies extends Component {
 		let gray = new cv.Mat();
 		let cap = new cv.VideoCapture(video);
 		let faces = new cv.RectVector();
-		let classifier = new cv.CascadeClassifier();
+		let eyes = new cv.RectVector();
+
+		let faceCascade = new cv.CascadeClassifier();
+		let eyeCascade = new cv.CascadeClassifier();
 
 		// load pre-trained classifier
-		classifier.load("haarcascade_frontalface_default.xml");
+		faceCascade.load(this.faceCascadeFile);
+		eyeCascade.load(this.eyeCascadeFile);
 
 		const FPS = 30;
-		this.detectionInstances = { video, src, dst, gray, cap, faces, classifier, FPS };
+		this.detectionInstances = { video, src, dst, gray, cap, faces, eyes, faceCascade, eyeCascade, FPS };
 		// schedule the first one.
 		this.detectFaceAndSync();
 	};
@@ -213,7 +220,7 @@ class AnimatedEmojies extends Component {
 			alert("this.detectionInstances not available.");
 			return;
 		}
-		let { video, src, dst, gray, cap, faces, classifier, FPS } = this.detectionInstances;
+		let { video, src, dst, gray, cap, faces, eyes, faceCascade, eyeCascade, FPS } = this.detectionInstances;
 		let emojiDiv = this.selectedEmoji.current;
 		let cv = window.cv;
 		try {
@@ -223,7 +230,9 @@ class AnimatedEmojies extends Component {
 				dst.delete();
 				gray.delete();
 				faces.delete();
-				classifier.delete();
+				eyes.delete();
+				faceCascade.delete();
+				eyeCascade.delete();
 				return;
 			}
 			let begin = Date.now();
@@ -231,8 +240,9 @@ class AnimatedEmojies extends Component {
 			cap.read(src);
 			src.copyTo(dst);
 			cv.cvtColor(dst, gray, cv.COLOR_RGBA2GRAY, 0);
+
 			// detect faces.
-			classifier.detectMultiScale(gray, faces, 1.1, 3, 0);
+			faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0);
 
 			if (faces.size() === 0) {
 				console.log("No detections");
@@ -242,14 +252,38 @@ class AnimatedEmojies extends Component {
 			}
 			emojiDiv && (emojiDiv.style.display = "block");
 			let firstFace = faces.get(0);
+
+			let roiGray = gray.roi(firstFace);
+			let roiSrc = dst.roi(firstFace);
+			eyeCascade.detectMultiScale(roiGray, eyes);
+
+			let rotation = 0; // deg
+
+			if (eyes.size() === 2) {
+				let leftEye = eyes.get(0);
+				let rightEye = eyes.get(1);
+				console.log({ leftEye, rightEye });
+				rotation = Math.atan((leftEye.y * this.scaleY - rightEye.y * this.scaleY) / (leftEye.x * this.scaleX - rightEye.x * this.scaleX));
+				for (let j = 0; j < eyes.size(); j++) {
+					let point1 = new cv.Point(eyes.get(j).x, eyes.get(j).y);
+					let point2 = new cv.Point(eyes.get(j).x + eyes.get(j).width, eyes.get(j).y + eyes.get(j).height);
+					cv.rectangle(roiSrc, point1, point2, [0, 255, 255, 255]);
+				}
+				cv.imshow(this.canvasTag.current, dst);
+			}
+			roiGray.delete();
+			roiSrc.delete();
+
 			// firstFace.x , firstFace.width, firstFace.y , firstFace.height
 			// console.log("firstFace", firstFace);
+			console.log(`rotate(${rotation * (180 / Math.PI)}deg)`);
 			emojiDiv &&
 				Object.assign(emojiDiv.style, {
 					top: `${firstFace.y * this.scaleY}px`,
 					left: `${firstFace.x * this.scaleX}px`,
 					width: `${firstFace.width * this.scaleX}px`,
 					height: `${firstFace.height * this.scaleY}px`,
+					...(rotation === 0 ? {} : { transform: `rotate(${rotation * (180 / Math.PI)}deg)` }),
 				});
 
 			// draw rectangle around faces and draw it on canvas
