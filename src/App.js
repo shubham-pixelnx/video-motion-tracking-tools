@@ -61,9 +61,11 @@ class App extends Component {
 
 					{this.state.view === SELECT_TOOL ? <Step2 showLoader={this.showLoader} moveTo={this.moveTo} stepInputs={this.state.stepInputs} onToolSelect={this.onToolSelect} /> : null}
 
-					{[ANIMATED_EMOJIES].includes(this.state.view) ? <AnimatedEmojies showLoader={this.showLoader} moveTo={this.moveTo} stepInputs={this.state.stepInputs} /> : null}
+					{[ANIMATED_EMOJIES, FACE_ELEMENTS, NEON_EYES].includes(this.state.view) ? (
+						<AnimatedEmojies showLoader={this.showLoader} moveTo={this.moveTo} stepInputs={this.state.stepInputs} />
+					) : null}
 
-					{[NEON_PACK].includes(this.state.view) ? <NeonPack showLoader={this.showLoader} moveTo={this.moveTo} stepInputs={this.state.stepInputs} /> : null}
+					{[AR_STROKES, NEON_PACK].includes(this.state.view) ? <NeonPack showLoader={this.showLoader} moveTo={this.moveTo} stepInputs={this.state.stepInputs} /> : null}
 				</StepsWrapper>
 			</>
 		);

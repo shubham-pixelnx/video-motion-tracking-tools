@@ -40,9 +40,7 @@ class TrackingPopup extends Component {
 		this.videoTag = createRef();
 		this.canvasTag = createRef();
 
-		this.state = {
-			coords: {},
-		};
+		this.state = {};
 		this.originCoords = { x: 0, y: 0 };
 		this.dstCoords = { x: 0, y: 0 };
 		this.mousedown = false;
@@ -62,92 +60,183 @@ class TrackingPopup extends Component {
 				this.canvas.width = video.clientWidth;
 				this.canvas.height = video.clientHeight;
 
-				this.props.showLoader(false);
-				this.initCanvas();
+				setTimeout(() => {
+					this.initTrackingPoints();
+					this.props.showLoader(false);
+				}, 1000);
 			});
 		})();
 	}
-	previewTracking = () => {
-		console.log(this.state.coords);
+	initTrackingPoints = () => {
 		let video = this.videoTag.current;
 		let cv = window.cv;
 		let cap = new cv.VideoCapture(video);
 
-		// take first frame of the video
-		let frame = new cv.Mat(video.clientHeight, video.clientWidth, cv.CV_8UC4);
-		cap.read(frame);
+		// parameters for ShiTomasi corner detection
+		let [maxCorners, qualityLevel, minDistance, blockSize] = [30, 0.3, 7, 7];
 
-		// hardcode the initial location of window
-		let trackWindow = new cv.Rect(this.state.coords.x, this.state.coords.y, this.state.coords.width, this.state.coords.height);
+		// parameters for lucas kanade optical flow
+		let winSize = new cv.Size(15, 15);
+		let maxLevel = 2;
+		let criteria = new cv.TermCriteria(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 0.03);
 
-		// set up the ROI for tracking
-		let roi = frame.roi(trackWindow);
-		let hsvRoi = new cv.Mat();
-		cv.cvtColor(roi, hsvRoi, cv.COLOR_RGBA2RGB);
-		cv.cvtColor(hsvRoi, hsvRoi, cv.COLOR_RGB2HSV);
-		let mask = new cv.Mat();
-		let lowScalar = new cv.Scalar(30, 30, 0);
-		let highScalar = new cv.Scalar(180, 180, 180);
-		let low = new cv.Mat(hsvRoi.rows, hsvRoi.cols, hsvRoi.type(), lowScalar);
-		let high = new cv.Mat(hsvRoi.rows, hsvRoi.cols, hsvRoi.type(), highScalar);
-		cv.inRange(hsvRoi, low, high, mask);
-		let roiHist = new cv.Mat();
-		let hsvRoiVec = new cv.MatVector();
-		hsvRoiVec.push_back(hsvRoi);
-		cv.calcHist(hsvRoiVec, [0], mask, roiHist, [180], [0, 180]);
-		cv.normalize(roiHist, roiHist, 0, 255, cv.NORM_MINMAX);
+		// create some random colors
+		let color = [];
+		for (let i = 0; i < maxCorners; i++) {
+			color.push(new cv.Scalar(parseInt(Math.random() * 255), parseInt(Math.random() * 255), parseInt(Math.random() * 255), 255));
+		}
 
-		// delete useless mats.
-		roi.delete();
-		hsvRoi.delete();
-		mask.delete();
-		low.delete();
-		high.delete();
-		hsvRoiVec.delete();
+		// take first frame and find corners in it
+		let oldFrame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+		cap.read(oldFrame); // first frame
+		let oldGray = new cv.Mat();
+		cv.cvtColor(oldFrame, oldGray, cv.COLOR_RGB2GRAY);
+		let p0 = new cv.Mat();
+		let logThis = new cv.Mat();
+		let none = new cv.Mat();
+		cv.goodFeaturesToTrack(oldGray, p0, maxCorners, qualityLevel, minDistance, none, blockSize);
+		console.log("p0", p0);
+		p0.copyTo(logThis);
+		console.log(logThis, logThis.data32F, logThis.data32F.length); // .data32F have x y coords
 
-		// Setup the termination criteria, either 10 iteration or move by atleast 1 pt
-		let termCrit = new cv.TermCriteria(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1);
+		// Create a mask image for drawing purposes
+		let zeroEle = new cv.Scalar(0, 0, 0, 255);
+		let mask = new cv.Mat(oldFrame.rows, oldFrame.cols, oldFrame.type(), zeroEle);
 
-		let hsv = new cv.Mat(video.clientHeight, video.clientWidth, cv.CV_8UC3);
-		let hsvVec = new cv.MatVector();
-		hsvVec.push_back(hsv);
-		let dst = new cv.Mat();
-		let trackBox = null;
+		let trackingPoints = [];
+		for (let i = 0; i < p0.rows; i++) {
+			trackingPoints.push({ coords: { x: p0.data32F[i * 2], y: p0.data32F[i * 2 + 1] }, rowIndex: i });
+		}
+		console.log(trackingPoints);
+		let trackingPointsWrapper = document.querySelector(".trackingPoints");
+		trackingPointsWrapper.innerHTML = "";
+		trackingPoints.forEach(({ coords, rowIndex }) => {
+			let tPoint = document.createElement("div");
+			tPoint.className = "trackingPoint";
+			const handletPointClick = () => {
+				tPoint.removeEventListener("click", handletPointClick);
+				tPoint.classList.add("active");
+				trackingPointsWrapper.querySelectorAll(".trackingPoint:not(.active)").forEach((el) => el.remove());
+				video.play().then(() => {
+					let selectedTrackingPoint = p0.row(rowIndex);
+					selectedTrackingPoint.copyTo(p0); // this will remove all other tracking points except selected one
+					this.selectTrackingPoint({ coords, tPointEl: tPoint }, { oldFrame, oldGray, p0, cap, winSize, maxLevel, criteria, color });
+				});
+			};
+			tPoint.addEventListener("click", handletPointClick);
+			Object.assign(tPoint.style, {
+				top: `${coords.y}px`,
+				left: `${coords.x}px`,
+			});
+			trackingPointsWrapper.appendChild(tPoint);
+		});
+
+		/* // draw the tracks
+		for (let i = 0; i < goodNew.length; i++) {
+			cv.circle(oldFrame, goodNew[i], 5, color[i], -1);
+		}
+		cv.add(oldFrame, mask, oldFrame);
+
+		cv.imshow(this.canvasTag.current, oldFrame); */
+		/* let frameGray = new cv.Mat();
+		let p1 = new cv.Mat();
+		let st = new cv.Mat();
+		let err = new cv.Mat();
+		cv.calcOpticalFlowPyrLK(oldGray, frameGray, p0, p1, st, err, winSize, maxLevel, criteria);
+		console.log(p0); */
+	};
+	selectTrackingPoint = ({ coords, tPointEl }, { oldFrame, oldGray, p0, cap, winSize, maxLevel, criteria, color }) => {
+		let cv = window.cv;
+		let video = this.videoTag.current;
+
+		// Create a mask image for drawing purposes
+		let zeroEle = new cv.Scalar(0, 0, 0, 255);
+		let mask = new cv.Mat(oldFrame.rows, oldFrame.cols, oldFrame.type(), zeroEle);
+
+		let frame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+		let frameGray = new cv.Mat();
+		let p1 = new cv.Mat();
+		let st = new cv.Mat();
+		let err = new cv.Mat();
 
 		const FPS = 30;
+		let frameCount = 0;
 		const processVideo = () => {
 			try {
-				if (/* video.paused || video.ended */ false) {
+				if (video.paused || video.ended) {
 					// clean and stop.
-					console.log("// clean and stop.");
 					frame.delete();
-					dst.delete();
-					hsvVec.delete();
-					roiHist.delete();
-					hsv.delete();
+					oldGray.delete();
+					p0.delete();
+					p1.delete();
+					err.delete();
+					mask.delete();
 					return;
 				}
 				let begin = Date.now();
 
 				// start processing.
 				cap.read(frame);
-				cv.cvtColor(frame, hsv, cv.COLOR_RGBA2RGB);
-				cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
-				cv.calcBackProject(hsvVec, [0], roiHist, dst, [0, 180], 1);
-				// cv.imshow(this.canvas, dst);
-				// cv.imshow(this.canvas, dst);
+				cv.cvtColor(frame, frameGray, cv.COLOR_RGBA2GRAY);
 
-				// apply camshift to get the new location
-				[trackBox, trackWindow] = cv.CamShift(dst, trackWindow, termCrit);
+				// calculate optical flow
+				cv.calcOpticalFlowPyrLK(oldGray, frameGray, p0, p1, st, err, winSize, maxLevel, criteria);
+				// cv.calcOpticalFlowPyrLK(prevImg, nextImg, prevPts, nextPts, status, err)
 
-				// Draw it on image
-				let pts = cv.rotatedRectPoints(trackBox);
-				cv.line(frame, pts[0], pts[1], [255, 0, 0, 255], 3);
-				cv.line(frame, pts[1], pts[2], [255, 0, 0, 255], 3);
-				cv.line(frame, pts[2], pts[3], [255, 0, 0, 255], 3);
-				cv.line(frame, pts[3], pts[0], [255, 0, 0, 255], 3);
-				cv.imshow(this.canvas, frame);
+				// select good points
+				let goodNew = [];
+				let goodOld = [];
+				// console.log("st.rows", st.rows);
+				for (let i = 0; i < st.rows; i++) {
+					// status (st) – output status vector (of unsigned chars); each element of the vector is set to 1 if the flow for the corresponding features has been found, otherwise, it is set to 0.
 
+					if (st.data[i] === 1) {
+						goodNew.push(new cv.Point(p1.data32F[i * 2], p1.data32F[i * 2 + 1]));
+						goodOld.push(new cv.Point(p0.data32F[i * 2], p0.data32F[i * 2 + 1]));
+					}
+
+					if (st.data[i] === 0) {
+						// point no longer detected in frame
+						frame.delete();
+						oldGray.delete();
+						p0.delete();
+						p1.delete();
+						err.delete();
+						mask.delete();
+						return;
+					}
+				}
+
+				// draw the tracks
+				for (let i = 0; i < goodNew.length; i++) {
+					cv.line(mask, goodNew[i], goodOld[i], color[i], 2);
+					cv.circle(frame, goodNew[i], 5, color[i], -1);
+
+					Object.assign(tPointEl.style, {
+						top: `${goodNew[i].y}px`,
+						left: `${goodNew[i].x}px`,
+					});
+				}
+				cv.add(frame, mask, frame);
+
+				cv.imshow(this.canvasTag.current, frame);
+
+				// now update the previous frame and previous points
+				frameGray.copyTo(oldGray);
+				p0.delete();
+				p0 = null;
+				p0 = new cv.Mat(goodNew.length, 1, cv.CV_32FC2);
+				for (let i = 0; i < goodNew.length; i++) {
+					p0.data32F[i * 2] = goodNew[i].x;
+					p0.data32F[i * 2 + 1] = goodNew[i].y;
+				}
+
+				frameCount++;
+				console.log("------");
+
+				/* if (frameCount === 20) {
+					return;
+				} */
 				// schedule the next one.
 				let delay = 1000 / FPS - (Date.now() - begin);
 				setTimeout(processVideo, delay);
@@ -156,85 +245,20 @@ class TrackingPopup extends Component {
 			}
 		};
 
-		video.play();
 		// schedule the first one.
 		setTimeout(processVideo, 0);
-	};
-	getRelativeCursorPos = (element, event) => {
-		const elementRect = element.getBoundingClientRect();
-		return {
-			x: event.clientX - elementRect.x,
-			y: event.clientY - elementRect.y,
-		};
-	};
-
-	initCanvas = () => {
-		this.ctx = this.canvas.getContext("2d");
-
-		this.canvas.addEventListener("mousedown", (e) => {
-			this.originCoords = this.getRelativeCursorPos(this.canvas, e);
-
-			this.mousedown = true;
-		});
-		this.canvas.addEventListener("mousemove", (e) => {
-			if (!this.mousedown) return;
-			this.dstCoords = this.getRelativeCursorPos(this.canvas, e);
-			this.drawRect();
-		});
-		document.addEventListener("mouseup", (e) => {
-			if (!this.mousedown) {
-				return;
-			}
-			this.mousedown = false;
-
-			this.dstCoords = this.getRelativeCursorPos(this.canvas, e);
-			this.drawRect();
-			this.setState({
-				coords: this.getRectCoords(),
-			});
-		});
-	};
-	getRectCoords = () => {
-		let originCoords = {
-			x: Math.min(this.originCoords.x, this.dstCoords.x),
-			y: Math.min(this.dstCoords.y, this.originCoords.y),
-		};
-		let dstCoords = {
-			x: Math.max(this.originCoords.x, this.dstCoords.x),
-			y: Math.max(this.dstCoords.y, this.originCoords.y),
-		};
-		return {
-			x: originCoords.x,
-			y: originCoords.y,
-			width: dstCoords.x - originCoords.x,
-			height: dstCoords.y - originCoords.y,
-		};
-	};
-
-	drawRect = () => {
-		let coords = this.getRectCoords();
-		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-		this.ctx.fillStyle = "#1da1f250";
-		this.ctx.strokeStyle = "yellow";
-		this.ctx.lineWidth = 3;
-
-		this.ctx.fillRect(coords.x, coords.y, coords.width, coords.height);
-		this.ctx.fill();
-		this.ctx.strokeRect(coords.x, coords.y, coords.width, coords.height);
-		this.ctx.stroke();
 	};
 
 	render() {
 		return (
 			<div className="popup tracking">
 				<div className="popupContent">
-					<h2>Select The Area to Track</h2>
-					<code>{JSON.stringify(this.state.coords)}</code>
+					<h2>Select The Tracking Point</h2>
 					<div className="spacer y"></div>
 					<div className="trackBoard">
 						<video ref={this.videoTag} src={this.props.stepInputs[SELECT_VIDEO].url}></video>
 						<canvas ref={this.canvasTag}></canvas>
+						<div className="trackingPoints"></div>
 					</div>
 					<div className="spacer y"></div>
 					<button className="autoWidth large secondary">Go Back</button>
@@ -305,7 +329,7 @@ class NeonPack extends Component {
 				<div className="player">
 					<div className="stream">
 						<video muted loop id="video" className="backgroundVideo" ref={this.videoTag} style={{ width: "100%" }} src={this.props.stepInputs[SELECT_VIDEO].url}></video>
-						<canvas ref={this.canvasTag} id="canvas" width="1036" height="582"></canvas>
+						<canvas ref={this.canvasTag} id="canvas"></canvas>
 						<div className="selectedEmoji" ref={this.selectedEmoji}>
 							<video style={{ ...(this.state.selectedEmoji.styles || {}) }} autoPlay muted loop src={this.state.selectedEmoji.url}></video>
 						</div>

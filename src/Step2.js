@@ -91,7 +91,7 @@ class Step2 extends Component {
 					if (group === FACE_TOOLS) {
 						title = "Ideal for video having face in it.";
 					} else if (group === OBJECT_MOTION) {
-						title = "To apply elements/effects on moving objects.";
+						title = "To apply elements/effects on moving objects/areas via automated tracking points.";
 					}
 					return (
 						<Fragment key={group}>

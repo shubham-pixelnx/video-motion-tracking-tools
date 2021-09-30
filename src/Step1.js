@@ -9,6 +9,10 @@ const videos = [
 		sublabel: "women-tilting-face",
 	},
 	{
+		url: "https://cdn.wedios.co/usercontent/6086af7fb1829928ace25e47/projects/61321bea24477b92eb3d7319/routed-2dc14004-43ed-465f-9e86-3339414c02c3.mp4",
+		sublabel: "-",
+	},
+	{
 		url: "https://cdn.wedios.co/mt.wedios.co/boy-with-headphones.mp4",
 		sublabel: "boy with headphones",
 	},
