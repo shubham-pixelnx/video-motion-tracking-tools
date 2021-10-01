@@ -1,5 +1,6 @@
 import { Component, createRef } from "react";
 import constants from "../constants";
+import sample from "lodash/sample";
 
 let {
 	steps: { SELECT_VIDEO },
@@ -119,8 +120,13 @@ class TrackingPopup extends Component {
 				trackingPointsWrapper.querySelectorAll(".trackingPoint:not(.active)").forEach((el) => el.remove());
 				video.play().then(() => {
 					let selectedTrackingPoint = p0.row(rowIndex);
+					/* let elementToMove = document.querySelector(".elementToMove");
+					let videoToMove = elementToMove.querySelector("video");
+					if (videoToMove) {
+						videoToMove.play();
+					} */
 					selectedTrackingPoint.copyTo(p0); // this will remove all other tracking points except selected one
-					this.selectTrackingPoint({ coords, tPointEl: tPoint }, { oldFrame, oldGray, p0, cap, winSize, maxLevel, criteria, color });
+					this.selectTrackingPoint({ coords, tPointEl: tPoint /* elementToMove */ }, { oldFrame, oldGray, p0, cap, winSize, maxLevel, criteria, color });
 				});
 			};
 			tPoint.addEventListener("click", handletPointClick);
@@ -145,7 +151,7 @@ class TrackingPopup extends Component {
 		cv.calcOpticalFlowPyrLK(oldGray, frameGray, p0, p1, st, err, winSize, maxLevel, criteria);
 		console.log(p0); */
 	};
-	selectTrackingPoint = ({ coords, tPointEl }, { oldFrame, oldGray, p0, cap, winSize, maxLevel, criteria, color }) => {
+	selectTrackingPoint = ({ coords, tPointEl, elementToMove }, { oldFrame, oldGray, p0, cap, winSize, maxLevel, criteria, color }) => {
 		let cv = window.cv;
 		let video = this.videoTag.current;
 
@@ -161,6 +167,10 @@ class TrackingPopup extends Component {
 
 		const FPS = 30;
 		let frameCount = 0;
+		let colorsArray = [];
+		for (let i = 0; i < 3; i++) {
+			colorsArray.push(new cv.Scalar(parseInt(Math.random() * 255), parseInt(Math.random() * 255), parseInt(Math.random() * 255), 255));
+		}
 		const processVideo = () => {
 			try {
 				if (video.paused || video.ended) {
@@ -216,9 +226,37 @@ class TrackingPopup extends Component {
 						top: `${goodNew[i].y}px`,
 						left: `${goodNew[i].x}px`,
 					});
+
+					/* if (elementToMove) {
+						Object.assign(elementToMove.style, {
+							top: `${goodNew[i].y}px`,
+							left: `${goodNew[i].x}px`,
+						});
+					} */
 				}
 				cv.add(frame, mask, frame);
 
+				/* let temp1 = frameGray.clone();
+				let temp2 = frame.clone();
+				let temp3 = cv.Mat.zeros(temp2.rows, temp2.cols, cv.CV_8UC3);
+
+				let lines = new cv.Mat();
+
+				cv.Canny(temp1, temp1, 120, 200, 3, false);
+
+				cv.HoughLinesP(temp1, lines, 1, Math.PI / 180, 2, 0, 0);
+				// draw lines
+				for (let i = 0; i < lines.rows; ++i) {
+					let startPoint = new cv.Point(lines.data32S[i * 4], lines.data32S[i * 4 + 1]);
+					let endPoint = new cv.Point(lines.data32S[i * 4 + 2], lines.data32S[i * 4 + 3]);
+					cv.line(temp3, startPoint, endPoint, new cv.Scalar(85, 255, 85), 1.8);
+				}
+
+				cv.imshow(this.canvasTag.current, temp3);
+				temp1.delete();
+				temp2.delete();
+				temp3.delete();
+				lines.delete(); */
 				cv.imshow(this.canvasTag.current, frame);
 
 				// now update the previous frame and previous points
@@ -259,13 +297,16 @@ class TrackingPopup extends Component {
 						<video ref={this.videoTag} src={this.props.stepInputs[SELECT_VIDEO].url}></video>
 						<canvas ref={this.canvasTag}></canvas>
 						<div className="trackingPoints"></div>
+						{/* <div className="elementToMove">
+							<video muted loop id="videoToMove" src="https://cdn.wedios.co/assets/videos/611a294ec27ad20b16f153ce/9ba7b28c-44f5-4f80-a66c-4e84ffb30390.webm"></video>
+						</div> */}
 					</div>
 					<div className="spacer y"></div>
-					<button className="autoWidth large secondary">Go Back</button>
+					{/* <button className="autoWidth large secondary">Go Back</button>
 					<div className="spacer x"></div>
 					<button className="autoWidth large" onClick={this.previewTracking}>
 						Preview Tracking
-					</button>
+					</button> */}
 				</div>
 			</div>
 		);

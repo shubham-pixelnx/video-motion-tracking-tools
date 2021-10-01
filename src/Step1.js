@@ -5,6 +5,18 @@ let {
 } = constants;
 const videos = [
 	{
+		url: "https://cdn.wedios.co/mt.wedios.co/book.mp4",
+		sublabel: "track book",
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/pexels-pavel-danilyuk-8005473.mp4",
+		sublabel: "pexels pavel",
+	},
+	{
+		url: "https://cdn.wedios.co/mt.wedios.co/pexels-vlada-karpovich-6748356.mp4",
+		sublabel: "pexels pavel",
+	},
+	{
 		url: "https://cdn.wedios.co/mt.wedios.co/women-tilting-face.mp4",
 		sublabel: "women-tilting-face",
 	},

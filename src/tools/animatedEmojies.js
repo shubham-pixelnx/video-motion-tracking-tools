@@ -262,7 +262,7 @@ class AnimatedEmojies extends Component {
 			if (eyes.size() === 2) {
 				let leftEye = eyes.get(0);
 				let rightEye = eyes.get(1);
-				console.log({ leftEye, rightEye });
+				// console.log({ leftEye, rightEye });
 				rotation = Math.atan((leftEye.y * this.scaleY - rightEye.y * this.scaleY) / (leftEye.x * this.scaleX - rightEye.x * this.scaleX));
 				for (let j = 0; j < eyes.size(); j++) {
 					let point1 = new cv.Point(eyes.get(j).x, eyes.get(j).y);
@@ -276,7 +276,7 @@ class AnimatedEmojies extends Component {
 
 			// firstFace.x , firstFace.width, firstFace.y , firstFace.height
 			// console.log("firstFace", firstFace);
-			console.log(`rotate(${rotation * (180 / Math.PI)}deg)`);
+			// console.log(`rotate(${rotation * (180 / Math.PI)}deg)`);
 			emojiDiv &&
 				Object.assign(emojiDiv.style, {
 					top: `${firstFace.y * this.scaleY}px`,
@@ -324,7 +324,15 @@ class AnimatedEmojies extends Component {
 					</div>
 					<div className="playerFooter">
 						<div className="playPause">
-							<button>Play</button>
+							<button
+								onClick={(e) => {
+									if (this.videoTag.current) {
+										this.videoTag.current.play();
+									}
+								}}
+							>
+								Play
+							</button>
 						</div>
 						{/* <div className="progressWrapper">
 							<div className="progressFillWrapper">
@@ -335,9 +343,7 @@ class AnimatedEmojies extends Component {
 								<div data-move="end" className="mdfEnd" style={{ left: "67.4905%" }}></div>
 							</div>
 						</div> */}
-						<div className="playerMeta">
-							<span>3.6/10.2s</span>
-						</div>
+						<div className="playerMeta">{/* <span>3.6/10.2s</span> */}</div>
 					</div>
 				</div>
 				<div className="assetsList">
