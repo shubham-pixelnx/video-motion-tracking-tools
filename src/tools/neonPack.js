@@ -1,5 +1,6 @@
 import { Component, createRef } from "react";
 import constants from "../constants";
+import sample from "lodash/sample";
 
 let {
 	steps: { SELECT_VIDEO },
@@ -161,6 +162,10 @@ class TrackingPopup extends Component {
 
 		const FPS = 30;
 		let frameCount = 0;
+		let colorsArray = [];
+		for (let i = 0; i < 3; i++) {
+			colorsArray.push(new cv.Scalar(parseInt(Math.random() * 255), parseInt(Math.random() * 255), parseInt(Math.random() * 255), 255));
+		}
 		const processVideo = () => {
 			try {
 				if (video.paused || video.ended) {
@@ -219,7 +224,33 @@ class TrackingPopup extends Component {
 				}
 				cv.add(frame, mask, frame);
 
-				cv.imshow(this.canvasTag.current, frame);
+				let temp1 = frameGray.clone();
+				let temp2 = frame.clone();
+				let temp3 = cv.Mat.zeros(temp2.rows, temp2.cols, cv.CV_8UC3);
+
+				let lines = new cv.Mat();
+
+				cv.Canny(temp1, temp1, 120, 200, 3, false);
+
+				cv.HoughLinesP(temp1, lines, 1, Math.PI / 180, 2, 0, 0);
+				// draw lines
+				for (let i = 0; i < lines.rows; ++i) {
+					let randomColor = colorsArray[0];
+					/* if (i > lines.rows / 2) {
+						randomColor = colorsArray[0];
+					} else {
+						randomColor = colorsArray[1];
+					} */
+					let startPoint = new cv.Point(lines.data32S[i * 4], lines.data32S[i * 4 + 1]);
+					let endPoint = new cv.Point(lines.data32S[i * 4 + 2], lines.data32S[i * 4 + 3]);
+					cv.line(temp3, startPoint, endPoint, /* randomColor */ new cv.Scalar(85, 255, 85), 1.8);
+				}
+
+				cv.imshow(this.canvasTag.current, temp3);
+				temp1.delete();
+				temp2.delete();
+				temp3.delete();
+				lines.delete();
 
 				// now update the previous frame and previous points
 				frameGray.copyTo(oldGray);

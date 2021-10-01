@@ -28,7 +28,8 @@ const tools = [
 	},
 	{
 		key: NEON_EYES,
-		url: "https://i.gyazo.com/a97a0e806f41ed2dcbaa08db34623297.mp4",
+		// url: "https://i.gyazo.com/a97a0e806f41ed2dcbaa08db34623297.mp4",
+		thumb: "https://i.imgur.com/xe4QkK0.png",
 		label: "Neon to the Eyes 🕶",
 		sublabel: "Add shiny neon to the eye.",
 		group: FACE_TOOLS,

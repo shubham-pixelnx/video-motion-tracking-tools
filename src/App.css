@@ -357,6 +357,7 @@ button:hover {
 	position: absolute;
 	top: 0;
 	left: 0;
+	mix-blend-mode: screen;
 }
 .trackBoard .trackingPoints {
 	position: absolute;
@@ -373,7 +374,7 @@ button:hover {
 	height: 8px;
 	border-radius: 50%;
 	cursor: pointer;
-	transition: 0.3s;
+	/* transition: 0.3s; */
 	transform-origin: center;
 	background: red;
 	box-shadow: rgba(255, 255, 0, 1) 0px 0px 0px 3px;
